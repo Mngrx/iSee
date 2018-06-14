@@ -78,7 +78,7 @@ while True:
       gpio_led1.setValue(1)
       gpio_led2.setValue(0)
       gpio_led3.setValue(0)
-      nomeFoto = strftime("%Y-%m-%d_%H:%M:%S", gmtime())+"jpg"
+      nomeFoto = strftime("%Y-%m-%d_%H:%M:%S", gmtime())+".jpg"
       comando = "fswebcam -r 1280x720 --no-banner "+nomeFoto
       #chama função para tirar foto
       os.system(comando)
