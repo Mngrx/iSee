@@ -1,5 +1,6 @@
 import os
 from time import gmtime, strftime, sleep
+import pyrebase
 
 LED1 = 17 # Led que indica foto esta sendo tirada
 LED2 = 27 # Led que indica que o teste foi iniciado
@@ -8,6 +9,28 @@ LED4 = 4 # Led que indica que está ligado
 BNT1 = 5 # Botão para tirar foto
 BNT2 = 6 # Botão para aceitar a foto e passar para o processamento
 BNT3 = 13 # Botão para cancelar/resetar o processo
+
+#setup do firebase com o pyrebase
+config = {
+    "apiKey": "AIzaSyCjboFbctXyrNxeSx8Loea4A6EKk2wciAs",
+    "authDomain": "isee-52052.firebaseapp.com",
+    "databaseURL": "https://isee-52052.firebaseio.com",
+    'projectId': "isee-52052",
+    "storageBucket": "isee-52052.appspot.com",
+    'messagingSenderId': "639057919948"
+}
+firebase = pyrebase.initialize_app(config)
+
+#dados para enviar imagem para o firebase
+auth = firebase.auth()
+
+email = 'embarcado@gmail.com' 
+password = 'lindeza'
+
+user = auth.sign_in_with_email_and_password(email, password) #fazendo a autenticação com as credenciais
+
+storage = firebase.storage()
+
 
 class digitalPort:
   
@@ -55,10 +78,24 @@ while True:
       gpio_led1.setValue(1)
       gpio_led2.setValue(0)
       gpio_led3.setValue(0)
-      j = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+      nomeFoto = strftime("%Y-%m-%d_%H:%M:%S", gmtime())+"jpg"
+      comando = "fswebcam -r 1280x720 --no-banner "+nomeFoto
       #chama função para tirar foto
+      os.system(comando)
       #envia foto para firebase
-      sleep(1)
+      t = storage.child(
+          "images/"+nomeFoto).put(nomeFoto, user['idToken']
+        )
+
+      sleep(0.2)
+      gpio_led1.setValue(0)
+      sleep(0.2)
+      gpio_led1.setValue(1)
+      sleep(0.2)
+      gpio_led1.setValue(0)
+      sleep(0.2)
+      gpio_led1.setValue(1)
+      sleep(0.2)
       gpio_led1.setValue(0)
       gpio_led2.setValue(0)
       gpio_led3.setValue(0)
@@ -77,7 +114,7 @@ while True:
       #Envia dados para o firebase
       sleep(2)
       fase = 2
-    
+
     if (gpio_bnt3.readValue() == 1 or fase == 2):
       gpio_led1.setValue(1)
       gpio_led2.setValue(1)
